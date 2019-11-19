@@ -41,6 +41,16 @@ func (l *Lexer) readChar() {
 	l.readPosition++
 }
 
+// peekChar is a lot like readChar, excepts it
+// reads ahead without incrementing the current
+// position so that we can look for ie. '==', '!='
+func (l *Lexer) peekChar() byte {
+	if l.readPosition >= len(l.input) {
+		return 0
+	}
+	return l.input[l.readPosition]
+}
+
 // NextToken deciphers and determines the validity
 // of a given character of a string of source code,
 // if valid it will assign the representative "token"
@@ -51,15 +61,21 @@ func (l *Lexer) NextToken() token.Token {
 
 	switch l.char {
 	case '=':
-		tok = newToken(token.ASSIGN, l.char)
-	case ';':
-		tok = newToken(token.SEMICOLON, l.char)
+		if l.peekChar() == '=' {
+			tok = l.twoCharToken(token.EQ)
+		} else {
+			tok = newToken(token.ASSIGN, l.char)
+		}
 	case '+':
 		tok = newToken(token.PLUS, l.char)
 	case '-':
 		tok = newToken(token.MINUS, l.char)
 	case '!':
+		if l.peekChar() == '=' {
+			tok = l.twoCharToken(token.NEQ)
+		} else {
 			tok = newToken(token.BANG, l.char)
+		}
 	case '/':
 		tok = newToken(token.SLASH, l.char)
 	case '*':
@@ -126,6 +142,16 @@ func (l *Lexer) readNumber() string {
 	end := l.position
 
 	return l.input[begin:end]
+}
+
+// twoCharToken is for creating tokens
+// with two characters ie. '==' '!='
+func (l *Lexer) twoCharToken(t token.Type) token.Token {
+	first := l.char
+	l.readChar()
+	last := l.char
+
+	return newToken(t, first, last)
 }
 
 func (l *Lexer) skipWhitespace() {

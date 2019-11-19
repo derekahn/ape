@@ -41,6 +41,10 @@ const (
 	LT = "<"
 	// GT is for "greater than" evaluation
 	GT = ">"
+	// EQ equal then
+	EQ = "=="
+	// NEQ is not equal to
+	NEQ = "!="
 
 	/* Delimiters */
 

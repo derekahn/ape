@@ -156,6 +156,23 @@ func TestNextToken(t *testing.T) {
 		run(t, input, tests)
 	})
 
+	t.Run("it should handle eqality '==' comparisons", func(t *testing.T) {
+		input := `
+			10 == 10;
+			10 != 9;
+			=`
+
+		tests := []tokenTest{
+			{token.INT, "10"},
+			{token.EQ, "=="},
+			{token.INT, "10"},
+			{token.SEMICOLON, ";"},
+			{token.INT, "10"},
+			{token.NEQ, "!="},
+			{token.INT, "9"},
+			{token.SEMICOLON, ";"},
+			{token.ASSIGN, "="},
+			{token.EOF, ""},
 		}
 
 		run(t, input, tests)
