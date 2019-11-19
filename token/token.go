@@ -29,6 +29,18 @@ const (
 	ASSIGN = "="
 	// PLUS is for mathematical addition
 	PLUS = "+"
+	// MINUS is for mathematical subtraction
+	MINUS = "-"
+	// BANG is for inverted boolean logic
+	BANG = "!"
+	// ASTERIX is for mathematical multiplication
+	ASTERIX = "*"
+	// SLASH is for mathematical division
+	SLASH = "/"
+	// LT is for "less than" evaluation
+	LT = "<"
+	// GT is for "greater than" evaluation
+	GT = ">"
 
 	/* Delimiters */
 
