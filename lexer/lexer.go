@@ -134,7 +134,7 @@ func (l *Lexer) skipWhitespace() {
 	}
 }
 
-func newToken(ty token.Type, char byte) token.Token {
+func newToken(ty token.Type, char ...byte) token.Token {
 	return token.Token{
 		Type:    ty,
 		Literal: string(char),
