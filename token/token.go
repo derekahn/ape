@@ -59,15 +59,30 @@ const (
 
 	/* Keywords */
 
-	// FUNCTION TODO
+	// FUNCTION indicates an expression involving 'n' variables
 	FUNCTION = "FUNCTION"
-	// LET TODO
+	// LET indicates an assignment expression
 	LET = "LET"
+	// TRUE is a primitive boolean
+	TRUE = "TRUE"
+	// FALSE is a primitive boolean
+	FALSE = "FALSE"
+	// IF is the conditional indicator
+	IF = "IF"
+	// ELSE is the default conditional
+	ELSE = "ELSE"
+	// RETURN exits/escapes a function
+	RETURN = "RETURN"
 )
 
 var keywords = map[string]Type{
-	"fn":  FUNCTION,
-	"let": LET,
+	"fn":     FUNCTION,
+	"let":    LET,
+	"true":   TRUE,
+	"false":  FALSE,
+	"if":     IF,
+	"else":   ELSE,
+	"return": RETURN,
 }
 
 // LookupIdent validates if a keyword exists,
