@@ -6,6 +6,7 @@ type (
 	// of the token it's associated with
 	Node interface {
 		TokenLiteral() string
+		String() string
 	}
 	// Statement represents a section of an Expression
 	Statement interface {
