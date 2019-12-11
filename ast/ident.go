@@ -16,3 +16,10 @@ func (i *Identifier) expressionNode() {}
 func (i *Identifier) TokenLiteral() string {
 	return i.Token.Literal
 }
+
+// String allows us to print the string literal
+// value for debugging purposes. Although it isn't
+// required for an interace, it's for consistency
+func (i *Identifier) String() string {
+	return i.Value
+}
