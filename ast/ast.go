@@ -1,5 +1,7 @@
 package ast
 
+import "bytes"
+
 type (
 	// Node is for debugging because
 	// it must return the literal value
@@ -32,4 +34,17 @@ func (p *Program) TokenLiteral() string {
 		return p.Statements[0].TokenLiteral()
 	}
 	return ""
+}
+
+// String allows us to print the string literal
+// value for debugging purposes. It also allows
+// for us to adhere to the ast.Node interface
+func (p *Program) String() string {
+	var out bytes.Buffer
+
+	for _, s := range p.Statements {
+		out.WriteString(s.String())
+	}
+
+	return out.String()
 }
