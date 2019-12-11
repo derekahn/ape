@@ -2,7 +2,7 @@ package ast
 
 type (
 	// Node is for debugging because
-	// it msut return the literal value
+	// it must return the literal value
 	// of the token it's associated with
 	Node interface {
 		TokenLiteral() string
