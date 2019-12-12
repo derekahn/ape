@@ -111,6 +111,39 @@ func TestReturnStatement(t *testing.T) {
 	})
 }
 
+func TestIdentifierExpression(t *testing.T) {
+	t.Run("it should parse an identifer expression", func(t *testing.T) {
+		input := "foobar"
+
+		_, program := initProgram(t, input)
+		if len(program.Statements) != 1 {
+			t.Fatalf(
+				"program doesn't have enough statements. got=%d",
+				len(program.Statements),
+			)
+		}
+
+		stmt, ok := program.Statements[0].(*ast.ExpressionStatement)
+		if !ok {
+			t.Fatalf(
+				"program.Statements[0].(*ast.ExpressionStatement). got=%T",
+				program.Statements[0],
+			)
+		}
+
+		ident, ok := stmt.Expression.(*ast.Identifier)
+		if !ok {
+			t.Fatalf("exp not *ast.Identifier. got=%T", stmt.Expression)
+		}
+		if ident.Value != input {
+			t.Errorf("ident.Value not %s. got=%s", input, ident.Value)
+		}
+		if ident.TokenLiteral() != input {
+			t.Errorf("ident.TokenLiteral not %s. got=%s", input, ident.TokenLiteral())
+		}
+	})
+}
+
 func initProgram(t *testing.T, input string) (*Parser, *ast.Program) {
 	p := New(lexer.New(input))
 	checkParserErrors(t, p)
