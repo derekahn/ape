@@ -15,10 +15,7 @@ func TestLetStatement(t *testing.T) {
 			let foobar = 838383;
 		`
 
-		l := lexer.New(input)
-		p := New(l)
-
-		program := p.ParseProgram()
+		_, program := initProgram(t, input)
 		if program == nil {
 			t.Fatalf("ParseProgram() returned nil")
 		}
@@ -28,8 +25,6 @@ func TestLetStatement(t *testing.T) {
 				len(program.Statements),
 			)
 		}
-
-		checkParserErrors(t, p)
 
 		tests := []struct {
 			expectedIdentifier string
@@ -53,12 +48,7 @@ func TestLetStatement(t *testing.T) {
 			let = 10;
 			let 838383;
 		`
-
-		l := lexer.New(input)
-		p := New(l)
-
-		p.ParseProgram()
-
+		p, _ := initProgram(t, input)
 		errors := p.Errors()
 		if len(errors) < 1 {
 			t.Error("expecting to have errors for a bad let expression")
@@ -97,12 +87,7 @@ func TestReturnStatement(t *testing.T) {
 			return 993322;
 		`
 
-		l := lexer.New(input)
-		p := New(l)
-
-		program := p.ParseProgram()
-		checkParserErrors(t, p)
-
+		_, program := initProgram(t, input)
 		if len(program.Statements) != 3 {
 			t.Fatalf(
 				"program.Statements does not contain 3 statements. got=%d",
@@ -124,6 +109,13 @@ func TestReturnStatement(t *testing.T) {
 			}
 		}
 	})
+}
+
+func initProgram(t *testing.T, input string) (*Parser, *ast.Program) {
+	p := New(lexer.New(input))
+	checkParserErrors(t, p)
+
+	return p, p.ParseProgram()
 }
 
 func checkParserErrors(t *testing.T, p *Parser) {
