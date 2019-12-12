@@ -52,21 +52,6 @@ func (p *Parser) Errors() []string {
 	return p.errors
 }
 
-func (p *Parser) peekError(t token.Type) {
-	msg := fmt.Sprintf(
-		"expected next token to be %s, got %s instead",
-		t, p.peekToken.Type,
-	)
-
-	p.errors = append(p.errors, msg)
-}
-
-// small helper that advances both curToken and peekToken
-func (p *Parser) nextToken() {
-	p.curToken = p.peekToken
-	p.peekToken = p.lex.NextToken()
-}
-
 // ParseProgram constructs the root node of the *ast.Program.
 // It then iterates over every token in the input until it finds
 // an EOF token. Otherwise it appends it to ast.Statements
@@ -84,14 +69,30 @@ func (p *Parser) ParseProgram() *ast.Program {
 	return program
 }
 
-func (p *Parser) parseStatement() ast.Statement {
-	switch p.curToken.Type {
-	case token.LET:
-		return p.parseLetStatement()
-	case token.RETURN:
-		return p.parseReturnStatement()
-	default:
-		return nil
+func (p *Parser) currTokenIs(t token.Type) bool {
+	return p.curToken.Type == t
+}
+
+func (p *Parser) expectPeek(t token.Type) bool {
+	if p.peekTokenIs(t) {
+		p.nextToken()
+		return true
+	}
+
+	p.peekError(t)
+	return false
+}
+
+// small helper that advances both curToken and peekToken
+func (p *Parser) nextToken() {
+	p.curToken = p.peekToken
+	p.peekToken = p.lex.NextToken()
+}
+
+func (p *Parser) parseIdentifier() ast.Expression {
+	return &ast.Identifier{
+		Token: p.curToken,
+		Value: p.curToken.Literal,
 	}
 }
 
@@ -136,25 +137,32 @@ func (p *Parser) parseReturnStatement() *ast.ReturnStatement {
 	return stmt
 }
 
-func (p *Parser) currTokenIs(t token.Type) bool {
-	return p.curToken.Type == t
+func (p *Parser) parseStatement() ast.Statement {
+	switch p.curToken.Type {
+	case token.LET:
+		return p.parseLetStatement()
+	case token.RETURN:
+		return p.parseReturnStatement()
+	}
+}
+
+func (p *Parser) peekError(t token.Type) {
+	msg := fmt.Sprintf(
+		"expected next token to be %s, got %s instead",
+		t, p.peekToken.Type,
+	)
+
+	p.errors = append(p.errors, msg)
 }
 
 func (p *Parser) peekTokenIs(t token.Type) bool {
 	return p.peekToken.Type == t
 }
 
-func (p *Parser) expectPeek(t token.Type) bool {
-	if p.peekTokenIs(t) {
-		p.nextToken()
-		return true
-	}
 func (p *Parser) registerPrefix(t token.Type, fn prefixParser) {
 	p.prefixParsers[t] = fn
 }
 
-	p.peekError(t)
-	return false
 func (p *Parser) registerInfix(t token.Type, fn infixParser) {
 	p.infixParsers[t] = fn
 }
