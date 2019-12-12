@@ -8,16 +8,24 @@ import (
 	"ape/token"
 )
 
-// Parser is the data structure representing
-// the internal representation and position
-type Parser struct {
-	lex *lexer.Lexer
+type (
+	// Parser is the data structure representing
+	// the internal representation and position
+	Parser struct {
+		lex *lexer.Lexer
 
-	curToken  token.Token
-	peekToken token.Token
+		curToken  token.Token
+		peekToken token.Token
 
-	errors []string
-}
+		errors []string
+
+		prefixParsers map[token.Type]prefixParser
+		infixParsers  map[token.Type]infixParser
+	}
+
+	prefixParser func() ast.Expression
+	infixParser  func(ast.Expression) ast.Expression
+)
 
 // New is a factory function that produces
 // a new initialized Parser{}; initializes
@@ -27,6 +35,9 @@ func New(l *lexer.Lexer) *Parser {
 		lex:    l,
 		errors: []string{},
 	}
+
+	p.prefixParsers = make(map[token.Type]prefixParser)
+	p.registerPrefix(token.IDENT, p.parseIdentifier)
 
 	// Read two tokens, so curToken
 	// and peekToken are both set
@@ -138,7 +149,12 @@ func (p *Parser) expectPeek(t token.Type) bool {
 		p.nextToken()
 		return true
 	}
+func (p *Parser) registerPrefix(t token.Type, fn prefixParser) {
+	p.prefixParsers[t] = fn
+}
 
 	p.peekError(t)
 	return false
+func (p *Parser) registerInfix(t token.Type, fn infixParser) {
+	p.infixParsers[t] = fn
 }
