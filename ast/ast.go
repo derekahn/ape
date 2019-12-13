@@ -3,9 +3,7 @@ package ast
 import "bytes"
 
 type (
-	// Node is for debugging because
-	// it must return the literal value
-	// of the token it's associated with
+	// Node is the basis of our AST
 	Node interface {
 		TokenLiteral() string
 		String() string
