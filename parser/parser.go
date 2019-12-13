@@ -31,20 +31,21 @@ type (
 // a new initialized Parser{}; initializes
 // with 'curToken' and 'peekToken' being set
 func New(l *lexer.Lexer) *Parser {
-	p := &Parser{
+	p := Parser{
 		lex:    l,
 		errors: []string{},
 	}
 
 	p.prefixParsers = make(map[token.Type]prefixParser)
 	p.registerPrefix(token.IDENT, p.parseIdentifier)
+	p.registerPrefix(token.INT, p.parseIntegerLiteral)
 
 	// Read two tokens, so curToken
 	// and peekToken are both set
 	p.nextToken()
 	p.nextToken()
 
-	return p
+	return &p
 }
 
 // Errors is a get of the current parsing errors
@@ -56,7 +57,7 @@ func (p *Parser) Errors() []string {
 // It then iterates over every token in the input until it finds
 // an EOF token. Otherwise it appends it to ast.Statements
 func (p *Parser) ParseProgram() *ast.Program {
-	program := &ast.Program{}
+	program := ast.Program{}
 	program.Statements = []ast.Statement{}
 
 	for !p.currTokenIs(token.EOF) {
@@ -66,7 +67,7 @@ func (p *Parser) ParseProgram() *ast.Program {
 		p.nextToken()
 	}
 
-	return program
+	return &program
 }
 
 func (p *Parser) currTokenIs(t token.Type) bool {
@@ -97,7 +98,7 @@ func (p *Parser) parseIdentifier() ast.Expression {
 }
 
 func (p *Parser) parseLetStatement() *ast.LetStatement {
-	stmt := &ast.LetStatement{
+	stmt := ast.LetStatement{
 		Token: p.curToken,
 	}
 
@@ -120,7 +121,7 @@ func (p *Parser) parseLetStatement() *ast.LetStatement {
 		p.nextToken()
 	}
 
-	return stmt
+	return &stmt
 }
 
 // parseExpression checks whether we have a parsing fn associated with
@@ -136,19 +137,20 @@ func (p *Parser) parseExpression(precedence Priority) ast.Expression {
 }
 
 func (p *Parser) parseExpressionStatement() *ast.ExpressionStatement {
-	stmt := &ast.ExpressionStatement{Token: p.curToken}
-
+	stmt := ast.ExpressionStatement{Token: p.curToken}
 	stmt.Expression = p.parseExpression(LOWEST)
 
 	if p.peekTokenIs(token.SEMICOLON) {
 		p.nextToken()
 	}
 
-	return stmt
+	return &stmt
+}
+
 }
 
 func (p *Parser) parseReturnStatement() *ast.ReturnStatement {
-	stmt := &ast.ReturnStatement{Token: p.curToken}
+	stmt := ast.ReturnStatement{Token: p.curToken}
 
 	p.nextToken()
 
@@ -158,7 +160,7 @@ func (p *Parser) parseReturnStatement() *ast.ReturnStatement {
 		p.nextToken()
 	}
 
-	return stmt
+	return &stmt
 }
 
 func (p *Parser) parseStatement() ast.Statement {
