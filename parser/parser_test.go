@@ -48,9 +48,11 @@ func TestLetStatement(t *testing.T) {
 			let = 10;
 			let 838383;
 		`
-		p, _ := initProgram(t, input)
+		p := New(lexer.New(input))
+		p.ParseProgram()
+
 		errors := p.Errors()
-		if len(errors) < 1 {
+		if len(errors) < 3 {
 			t.Error("expecting to have errors for a bad let expression")
 		}
 	})
@@ -182,9 +184,11 @@ func TestIntegerLiteralExpression(t *testing.T) {
 
 func initProgram(t *testing.T, input string) (*Parser, *ast.Program) {
 	p := New(lexer.New(input))
+	program := p.ParseProgram()
+
 	checkParserErrors(t, p)
 
-	return p, p.ParseProgram()
+	return p, program
 }
 
 func checkParserErrors(t *testing.T, p *Parser) {
