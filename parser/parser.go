@@ -2,6 +2,7 @@ package parser
 
 import (
 	"fmt"
+	"strconv"
 
 	"ape/ast"
 	"ape/lexer"
@@ -147,6 +148,18 @@ func (p *Parser) parseExpressionStatement() *ast.ExpressionStatement {
 	return &stmt
 }
 
+func (p *Parser) parseIntegerLiteral() ast.Expression {
+	val, err := strconv.ParseInt(p.curToken.Literal, 0, 64)
+	if err != nil {
+		msg := fmt.Sprintf("could not parse %q as integer", p.curToken.Literal)
+		p.errors = append(p.errors, msg)
+		return nil
+	}
+
+	l := ast.IntegerLiteral{Token: p.curToken}
+	l.Value = val
+
+	return &l
 }
 
 func (p *Parser) parseReturnStatement() *ast.ReturnStatement {
