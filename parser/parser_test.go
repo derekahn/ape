@@ -184,17 +184,17 @@ func TestIntegerLiteralExpression(t *testing.T) {
 }
 
 func TestPrefixExpressions(t *testing.T) {
-	t.Run("it should parse expressions with a prefix operator", func(t *testing.T) {
-		tests := []struct {
-			input    string
-			operator string
-			value    int64
-		}{
-			{"!5;", "!", 5},
-			{"-15;", "-", 15},
-		}
+	tests := []struct {
+		input    string
+		operator string
+		value    int64
+	}{
+		{"!5;", "!", 5},
+		{"-15;", "-", 15},
+	}
 
-		for _, tt := range tests {
+	for i, tt := range tests {
+		t.Run(fmt.Sprintf("PrefixExpression[%d]: it should parse '%s' with a prefix operator", i, tt.input), func(t *testing.T) {
 			_, program := initProgram(t, tt.input)
 			if len(program.Statements) != 1 {
 				t.Fatalf(
@@ -225,8 +225,9 @@ func TestPrefixExpressions(t *testing.T) {
 			if !testIntegerLiteral(t, exp.Right, tt.value) {
 				return
 			}
-		}
-	})
+		})
+	}
+}
 
 func TestParsingInfixExpressions(t *testing.T) {
 	tests := []struct {
