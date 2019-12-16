@@ -1,5 +1,7 @@
 package parser
 
+import "ape/token"
+
 // Priority is the predefined
 // parsing order of operations
 type Priority int
@@ -41,4 +43,15 @@ func (p Priority) String() string {
 	default:
 		return "UNKNOWN"
 	}
+}
+
+var precedences = map[token.Type]Priority{
+	token.EQ:      EQUALS,
+	token.NEQ:     EQUALS,
+	token.LT:      LESSGREATER,
+	token.GT:      LESSGREATER,
+	token.PLUS:    SUM,
+	token.MINUS:   SUM,
+	token.SLASH:   PRODUCT,
+	token.ASTERIX: PRODUCT,
 }

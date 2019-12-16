@@ -1,6 +1,9 @@
 package parser
 
-import "testing"
+import (
+	"fmt"
+	"testing"
+)
 
 func TestPriority(t *testing.T) {
 	tests := []struct {
@@ -28,4 +31,69 @@ func TestPriority(t *testing.T) {
 			}
 		}
 	})
+}
+
+func TestOperatorPrcedenceParsing(t *testing.T) {
+	tests := []struct {
+		input, expected string
+	}{
+		{
+			"-a * b",
+			"((-a) * b)",
+		},
+		{
+			"!-a",
+			"(!(-a))",
+		},
+		{
+			"a + b + c",
+			"((a + b) + c)",
+		},
+		{
+			"a + b - c",
+			"((a + b) - c)",
+		},
+		{
+			"a * b * c",
+			"((a * b) * c)",
+		},
+		{
+			"a * b / c",
+			"((a * b) / c)",
+		},
+		{
+			"a + b / c",
+			"(a + (b / c))",
+		},
+		{
+			"a + b * c + d / e - f",
+			"(((a + (b * c)) + (d / e)) - f)",
+		},
+		{
+			"3 + 4; -5 * 5",
+			"(3 + 4)((-5) * 5)",
+		},
+		{
+			"5 > 4 == 3 < 4",
+			"((5 > 4) == (3 < 4))",
+		},
+		{
+			"5 < 4 != 3 > 4",
+			"((5 < 4) != (3 > 4))",
+		},
+		{
+			"3 + 4 * 5 == 3 * 1 + 4 * 5",
+			"((3 + (4 * 5)) == ((3 * 1) + (4 * 5)))",
+		},
+	}
+
+	for i, tt := range tests {
+		t.Run(fmt.Sprintf("OperatorPrecedence[%d]: it should evaluate the Priority of '%s'", i, tt.input), func(t *testing.T) {
+			_, program := initProgram(t, tt.input)
+			got := program.String()
+			if got != tt.expected {
+				t.Errorf("exptected=%q, got=%q\n", tt.expected, got)
+			}
+		})
+	}
 }

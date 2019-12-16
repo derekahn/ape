@@ -40,9 +40,13 @@ func New(l *lexer.Lexer) *Parser {
 	p.prefixParsers = make(map[token.Type]prefixParser)
 	p.registerPrefix(token.IDENT, p.parseIdentifier)
 	p.registerPrefix(token.INT, p.parseIntegerLiteral)
-
 	p.registerPrefix(token.BANG, p.parsePrefixExpression)
 	p.registerPrefix(token.MINUS, p.parsePrefixExpression)
+
+	p.infixParsers = make(map[token.Type]infixParser)
+	for tokenType := range precedences {
+		p.registerInfix(tokenType, p.parseInfixExpression)
+	}
 
 	// Read two tokens, so curToken
 	// and peekToken are both set
@@ -72,6 +76,13 @@ func (p *Parser) ParseProgram() *ast.Program {
 	}
 
 	return &program
+}
+
+func (p *Parser) currPrecedence() Priority {
+	if p, ok := precedences[p.curToken.Type]; ok {
+		return p
+	}
+	return LOWEST
 }
 
 func (p *Parser) currTokenIs(t token.Type) bool {
@@ -134,7 +145,8 @@ func (p *Parser) parseLetStatement() *ast.LetStatement {
 }
 
 // parseExpression checks whether we have a parsing fn associated with
-// p.curToken.Type in the prefix position, if so return parsing fn
+// p.curToken.Type in the prefix position, if so return parsing fn;
+// The heart of our 'Prat Parser'
 func (p *Parser) parseExpression(precedence Priority) ast.Expression {
 	prefix := p.prefixParsers[p.curToken.Type]
 	if prefix == nil {
@@ -143,6 +155,19 @@ func (p *Parser) parseExpression(precedence Priority) ast.Expression {
 	}
 
 	leftExp := prefix()
+
+	// if it's not the end (denoted by ';') keep looping
+	// until current priorty is lower than the next
+	for !p.peekTokenIs(token.SEMICOLON) && precedence < p.peekPrecedence() {
+		infix := p.infixParsers[p.peekToken.Type]
+		if infix == nil {
+			return leftExp
+		}
+
+		p.nextToken()
+		leftExp = infix(leftExp)
+	}
+
 	return leftExp
 }
 
@@ -169,6 +194,19 @@ func (p *Parser) parseIntegerLiteral() ast.Expression {
 	l.Value = val
 
 	return &l
+}
+
+func (p *Parser) parseInfixExpression(left ast.Expression) ast.Expression {
+	expression := ast.InfixExpression{
+		Token:    p.curToken,
+		Operator: p.curToken.Literal,
+		Left:     left,
+	}
+	precedence := p.currPrecedence()
+	p.nextToken()
+	expression.Right = p.parseExpression(precedence)
+
+	return &expression
 }
 
 func (p *Parser) parsePrefixExpression() ast.Expression {
@@ -215,6 +253,13 @@ func (p *Parser) peekError(t token.Type) {
 	)
 
 	p.errors = append(p.errors, msg)
+}
+
+func (p *Parser) peekPrecedence() Priority {
+	if p, ok := precedences[p.peekToken.Type]; ok {
+		return p
+	}
+	return LOWEST
 }
 
 func (p *Parser) peekTokenIs(t token.Type) bool {
