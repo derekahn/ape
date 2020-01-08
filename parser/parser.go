@@ -42,6 +42,8 @@ func New(l *lexer.Lexer) *Parser {
 	p.registerPrefix(token.INT, p.parseIntegerLiteral)
 	p.registerPrefix(token.BANG, p.parsePrefixExpression)
 	p.registerPrefix(token.MINUS, p.parsePrefixExpression)
+	p.registerPrefix(token.TRUE, p.parseBoolean)
+	p.registerPrefix(token.FALSE, p.parseBoolean)
 
 	p.infixParsers = make(map[token.Type]infixParser)
 	for tokenType := range precedences {
@@ -142,6 +144,13 @@ func (p *Parser) parseLetStatement() *ast.LetStatement {
 	}
 
 	return &stmt
+}
+
+func (p *Parser) parseBoolean() ast.Expression {
+	return &ast.Boolean{
+		Token: p.curToken,
+		Value: p.currTokenIs(token.TRUE),
+	}
 }
 
 // parseExpression checks whether we have a parsing fn associated with
