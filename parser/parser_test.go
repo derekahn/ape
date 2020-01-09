@@ -2,6 +2,7 @@ package parser
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 
 	"ape/ast"
@@ -46,6 +47,96 @@ func TestBooleanExpression(t *testing.T) {
 					tt.expectedBoolean,
 					boolean.Value,
 				)
+			}
+		})
+	}
+}
+
+func TestIfExpression(t *testing.T) {
+	tests := []struct {
+		input string
+	}{
+		{"if (x < y) { x }"},
+		{"if (x < y) { x } else { y }"},
+	}
+	minStmt := 1
+
+	desc := "IfExpression[%d]: it should parse '%s'"
+	for i, tt := range tests {
+		t.Run(fmt.Sprintf(desc, i, tt.input), func(t *testing.T) {
+			_, program := initProgram(t, tt.input)
+			if len(program.Statements) != minStmt {
+				t.Fatalf(
+					"program.Statements does not contain %d statements. got=%d\n",
+					minStmt,
+					len(program.Statements),
+				)
+			}
+
+			stmt, ok := program.Statements[0].(*ast.ExpressionStatement)
+			if !ok {
+				t.Fatalf(
+					"program.Statements[0] is not ast.ExpressionStatement. got=%T",
+					program.Statements[0],
+				)
+			}
+
+			exp, ok := stmt.Expression.(*ast.IfExpression)
+			if !ok {
+				t.Fatalf(
+					"stmt.Expression is not ast.IfExpression. got=%T",
+					stmt.Expression,
+				)
+			}
+
+			if !testInfixExpression(t, exp.Condition, "x", "<", "y") {
+				return
+			}
+
+			if len(exp.Consequence.Statements) != minStmt {
+				t.Errorf(
+					"'consequence' is not %d statements. got=%d\n",
+					minStmt,
+					len(exp.Consequence.Statements),
+				)
+			}
+
+			consequence, ok := exp.Consequence.Statements[0].(*ast.ExpressionStatement)
+			if !ok {
+				t.Fatalf(
+					"Statements[0] is not ast.ExpressionStatement. got=%T",
+					exp.Consequence.Statements[0],
+				)
+			}
+
+			if !testIdentifier(t, consequence.Expression, "x") {
+				return
+			}
+
+			// Seperate test logic fo IfElse statements
+			if strings.Contains(tt.input, "else") {
+				if len(exp.Alternative.Statements) != minStmt {
+					t.Errorf(
+						"exp.Alternative.Statements does not contain 1 statements. got=%d\n",
+						len(exp.Alternative.Statements),
+					)
+				}
+
+				alternative, ok := exp.Alternative.Statements[0].(*ast.ExpressionStatement)
+				if !ok {
+					t.Fatalf(
+						"Statements[0] is not ast.ExpressionStatement. got=%T",
+						exp.Alternative.Statements[0],
+					)
+				}
+
+				if !testIdentifier(t, alternative.Expression, "y") {
+					return
+				}
+			} else {
+				if exp.Alternative != nil {
+					t.Errorf("exp.Alternative.Statements was not nil. got=%+v", exp.Alternative)
+				}
 			}
 		})
 	}
