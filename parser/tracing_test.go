@@ -15,6 +15,6 @@ func TestTrace(t *testing.T) {
 
 func TestUntrace(t *testing.T) {
 	t.Run("This is an example of using 'parser/tracing.go'", func(t *testing.T) {
-		defer untrace(trace("parseExpressionStatement"))
+		defer untrace(trace("example_expression_statement"))
 	})
 }
