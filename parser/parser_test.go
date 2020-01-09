@@ -17,12 +17,11 @@ func TestBooleanExpression(t *testing.T) {
 		{"false;", false},
 	}
 
-	for _, tt := range tests {
-		_, program := initProgram(t, tt.input)
-		if len(program.Statements) != 1 {
-			t.Fatalf("program has not enough statements. got=%d",
-				len(program.Statements))
-		}
+	desc := "BooleanExpression[%d]: should parse '%s' as a boolean"
+	for i, tt := range tests {
+		t.Run(fmt.Sprintf(desc, i, tt.input), func(t *testing.T) {
+			_, program := initProgram(t, tt.input)
+			if len(program.Statements) != 1 {
 
 		stmt, ok := program.Statements[0].(*ast.ExpressionStatement)
 		if !ok {
