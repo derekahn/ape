@@ -24,7 +24,8 @@ func TestBooleanExpression(t *testing.T) {
 			_, program := initProgram(t, tt.input)
 			if len(program.Statements) != 1 {
 				t.Fatalf(
-					"program has not enough statements. got=%d",
+					"program.Statements does not contain %d statements. got=%d",
+					1,
 					len(program.Statements),
 				)
 			}
