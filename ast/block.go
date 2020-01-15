@@ -1,8 +1,9 @@
 package ast
 
 import (
-	"ape/token"
 	"bytes"
+
+	"ape/token"
 )
 
 // BlockStatement represents a series of statements
