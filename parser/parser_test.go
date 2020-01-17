@@ -53,6 +53,42 @@ func TestBooleanExpression(t *testing.T) {
 	}
 }
 
+func TestCallExpressionParsing(t *testing.T) {
+	input := "add(1, 2 * 3, 4 + 5)"
+
+	_, program := initProgram(t, input)
+	if len(program.Statements) != 1 {
+		t.Fatalf(
+			"program.Statements does not contain %d statements. got=%d\n",
+			1,
+			len(program.Statements),
+		)
+	}
+
+	stmt, ok := program.Statements[0].(*ast.ExpressionStatement)
+	if !ok {
+		t.Fatalf(
+			"stmt is not ast.ExpressionStatement. got=%T",
+			program.Statements[0],
+		)
+	}
+
+	exp, ok := stmt.Expression.(*ast.CallExpression)
+	if !ok {
+		t.Fatalf("stmt.Expression is not ast.CallExpression. got=%T", stmt.Expression)
+	}
+	if !testIdentifier(t, exp.Function, "add") {
+		return
+	}
+	if len(exp.Arguments) != 3 {
+		t.Fatalf("wrong length of arugments. got=%d", len(exp.Arguments))
+	}
+
+	testLiteralExpression(t, exp.Arguments[0], 1)
+	testInfixExpression(t, exp.Arguments[1], 2, "*", 3)
+	testInfixExpression(t, exp.Arguments[2], 4, "+", 5)
+}
+
 func TestFunctionLiteralParsing(t *testing.T) {
 	input := "fn(x, y) { x + y; }"
 
@@ -351,26 +387,6 @@ func TestIntegerLiteralExpression(t *testing.T) {
 			)
 		}
 	})
-}
-
-func TestOperatorPrecedenceParsing(t *testing.T) {
-	tests := []struct {
-		input, expected string
-	}{
-		{"true", "true"},
-		{"false", "false"},
-		{"3 > 5 == false", "((3 > 5) == false)"},
-		{"3 < 5 == true", "((3 < 5) == true)"},
-	}
-
-	desc := "OperatorPrecedenceParsing[%d]: it should parse '%s' with correct precedence"
-	for i, tt := range tests {
-		t.Run(fmt.Sprintf(desc, i, tt.input), func(t *testing.T) {
-
-		})
-
-	}
-
 }
 
 func TestParsingPrefixExpressions(t *testing.T) {

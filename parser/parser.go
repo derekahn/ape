@@ -48,12 +48,15 @@ func New(l *lexer.Lexer) *Parser {
 	p.registerPrefix(token.FALSE, p.parseBoolean)
 
 	p.registerPrefix(token.LPAREN, p.parseGroupedExpression)
-
 	p.registerPrefix(token.FUNCTION, p.parseFunctionLiteral)
 
 	p.infixParsers = make(map[token.Type]infixParser)
 	for tokenType := range precedences {
 		p.registerInfix(tokenType, p.parseInfixExpression)
+
+		if tokenType == token.LPAREN {
+			p.registerInfix(token.LPAREN, p.parseCallExpression)
+		}
 	}
 
 	// Read two tokens, so curToken
@@ -175,6 +178,41 @@ func (p *Parser) parseBoolean() ast.Expression {
 		Token: p.curToken,
 		Value: p.currTokenIs(token.TRUE),
 	}
+}
+
+func (p *Parser) parseCallExpression(fn ast.Expression) ast.Expression {
+	exp := ast.CallExpression{
+		Token:    p.curToken,
+		Function: fn,
+	}
+
+	exp.Arguments = p.parseCallArguments()
+
+	return &exp
+}
+
+func (p *Parser) parseCallArguments() []ast.Expression {
+	var args []ast.Expression
+
+	if p.peekTokenIs(token.RPAREN) {
+		p.nextToken()
+		return args
+	}
+
+	p.nextToken()
+	args = append(args, p.parseExpression(LOWEST))
+
+	for p.peekTokenIs(token.COMMA) {
+		p.nextToken()
+		p.nextToken()
+		args = append(args, p.parseExpression(LOWEST))
+	}
+
+	if !p.expectPeek(token.RPAREN) {
+		return nil
+	}
+
+	return args
 }
 
 // parseExpression checks whether we have a parsing fn associated with

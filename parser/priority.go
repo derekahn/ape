@@ -49,6 +49,7 @@ var precedences = map[token.Type]Priority{
 	token.EQ:      EQUALS,
 	token.NEQ:     EQUALS,
 	token.LT:      LESSGREATER,
+	token.LPAREN:  CALL,
 	token.GT:      LESSGREATER,
 	token.PLUS:    SUM,
 	token.MINUS:   SUM,
