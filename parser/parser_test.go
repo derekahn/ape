@@ -320,6 +320,42 @@ func TestLetStatement(t *testing.T) {
 	})
 }
 
+func TestLetStatements(t *testing.T) {
+	tests := []struct {
+		input              string
+		expectedIdentifier string
+		expectedValue      interface{}
+	}{
+		{"let x = 5;", "x", 5},
+		{"let y = true;", "y", true},
+		{"let foobar = y;", "foobar", "y"},
+	}
+
+	desc := "LetStatements[%d]: it should parse %s"
+	for i, tt := range tests {
+		t.Run(fmt.Sprintf(desc, i, tt.input), func(t *testing.T) {
+			_, program := initProgram(t, tt.input)
+			if len(program.Statements) != 1 {
+				t.Fatalf(
+					"program doesn't have enough statements. got=%d",
+					len(program.Statements),
+				)
+			}
+
+			stmt := program.Statements[0]
+			if !testingLet(t, stmt, tt.expectedIdentifier) {
+				return
+			}
+
+			val := stmt.(*ast.LetStatement).Value
+			if !testLiteralExpression(t, val, tt.expectedValue) {
+				return
+			}
+		})
+	}
+
+}
+
 func TestIdentifierExpression(t *testing.T) {
 	t.Run("it should parse an identifer expression", func(t *testing.T) {
 		input := "foobar"
@@ -486,35 +522,35 @@ func TestParsingInfixExpressions(t *testing.T) {
 }
 
 func TestReturnStatement(t *testing.T) {
-	t.Run("it should parse a 'return' expression", func(t *testing.T) {
-		input := `
-			return 5;
-			return 10;
-			return 993322;
-		`
+	tests := []struct {
+		input         string
+		expectedValue interface{}
+	}{
+		{"return 5;", 5},
+		{"return true;", true},
+		{"return foobar;", "foobar"},
+	}
 
-		_, program := initProgram(t, input)
-		if len(program.Statements) != 3 {
-			t.Fatalf(
-				"program.Statements does not contain 3 statements. got=%d",
-				len(program.Statements),
-			)
+	for _, tt := range tests {
+		_, program := initProgram(t, tt.input)
+		if len(program.Statements) != 1 {
+			t.Fatalf("program.Statements does not contain 1 statements. got=%d",
+				len(program.Statements))
 		}
 
-		for _, stmt := range program.Statements {
-			returnStmt, ok := stmt.(*ast.ReturnStatement)
-			if !ok {
-				t.Errorf("stmt not *ast.ReturnStatement. got=%T", stmt)
-				continue
-			}
-			if returnStmt.TokenLiteral() != "return" {
-				t.Errorf(
-					"returnStmt.Token.TokenLiteral not 'return', got %q",
-					returnStmt.TokenLiteral(),
-				)
-			}
+		stmt := program.Statements[0]
+		returnStmt, ok := stmt.(*ast.ReturnStatement)
+		if !ok {
+			t.Fatalf("stmt not *ast.ReturnStatement. got=%T", stmt)
 		}
-	})
+		if returnStmt.TokenLiteral() != "return" {
+			t.Fatalf("returnStmt.TokenLiteral not 'return', got %q",
+				returnStmt.TokenLiteral())
+		}
+		if testLiteralExpression(t, returnStmt.ReturnValue, tt.expectedValue) {
+			return
+		}
+	}
 }
 
 /*******************
